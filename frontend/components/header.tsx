@@ -3,6 +3,7 @@ import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import Image from 'next/image';
 import Logo from "@/public/img/kaluuba-logo.png";
+import ConnectButton from './connect-button';
 
 
 const navigation = [
@@ -48,9 +49,7 @@ export default function Header() {
             ))}
           </div>
           <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-          <a href="#" className="rounded-full bg-blue-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                Connect Wallet
-              </a>
+          <ConnectButton />
           </div>
         </nav>
         <Dialog open={mobileMenuOpen} onClose={setMobileMenuOpen} className="lg:hidden">
@@ -90,12 +89,7 @@ export default function Header() {
                   ))}
                 </div>
                 <div className="py-6">
-                <a
-                href="#"
-                    className="rounded-full bg-blue-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                >
-                Connect Wallet
-              </a>
+                <ConnectButton />
                 </div>
               </div>
             </div>
