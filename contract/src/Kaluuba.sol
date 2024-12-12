@@ -1,91 +1,152 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
+import { Errors } from "../src/libraries/Errors.sol";
+import { Event } from "./libraries/Event.sol";
+
 contract Kaluuba {
     struct Invoice {
+        uint256 invoiceId;
         address creator;
         string username;
-        string description; // Purpose or items details
+        string description;
         uint256 amount; // Amount in wei (ETH)
         bool isPaid;
+        bool isCancelled;
         address payer;
         string transactionUrl; // Etherscan transaction URL
     }
 
-    mapping(string => address) public usernames; // Maps username to wallet address
+    struct User {
+        uint256 userId;
+        address walletAddress;
+        string username;
+    }
+
+    uint256 public userCount;
+    uint256 public invoiceCount;
+
+
+    mapping(address => User) public users; // Maps wallet address to User
+    mapping(string => bool) public registeredUsernames; // Tracks registered usernames
     mapping(address => Invoice[]) public userInvoices; // Maps user to their invoices
-    mapping(string => Invoice) public invoiceDetails; // Maps invoice ID to its details
+    mapping(uint256 => Invoice) public invoiceDetails; // Maps invoice ID to its details
 
-    event UsernameRegistered(string username, address wallet);
-    event InvoiceCreated(string invoiceId, address creator, uint256 amount);
-    event PaymentReceived(string invoiceId, address payer, uint256 amount, string transactionUrl);
-
-    modifier usernameAvailable(string memory username) {
-        require(usernames[username] == address(0), "Username already taken");
+    modifier addressHasNoUsername() {
+        require(users[msg.sender].userId == 0, Errors.ADDRESS_ALREADY_HAS_USERNAME());
         _;
     }
 
-    // Function to register a unique username
-    function registerUsername(string memory username) external usernameAvailable(username) {
-        usernames[username] = msg.sender;
-        emit UsernameRegistered(username, msg.sender);
+    modifier usernameAvailable(string memory username) {
+        require(!registeredUsernames[username], Errors.USERNAME_TAKEN());
+        _;
     }
 
-    // Function to create an invoice (vendor or personal)
+    modifier validInvoice(uint256 invoiceId) {
+        require(invoiceDetails[invoiceId].creator != address(0), Errors.INVOICE_DOES_NOT_EXISTS());
+        _;
+    }
+
+    modifier invoiceOwner(uint256 invoiceId) {
+        require(invoiceDetails[invoiceId].creator == msg.sender, Errors.NOT_INVOICE_OWNER());
+        _;
+    }
+
+    constructor() {
+        userCount += 1;
+        users[msg.sender] = User({
+            userId: userCount,
+            walletAddress: msg.sender,
+            username: "alpha"
+        });
+        registeredUsernames["alpha"] = true;
+    }
+
+    function registerUsername(string memory _username)
+        external
+        addressHasNoUsername
+        usernameAvailable(_username)
+    {
+        userCount += 1;
+        users[msg.sender] = User({
+            userId: userCount,
+            walletAddress: msg.sender,
+            username: _username
+        });
+        registeredUsernames[_username] = true;
+
+        emit Event.UsernameRegistered(_username, msg.sender);
+    }
+
     function createInvoice(
-        string memory invoiceId,
-        string memory username,
         string memory description,
         uint256 amount
     ) external {
-        require(usernames[username] == msg.sender, "Unauthorized to create invoice for this username");
-        require(amount > 0, "Invoice amount must be greater than zero");
+        require(users[msg.sender].userId != 0, Errors.USER_MUST_BE_REGISTERED());
+        require(amount > 0, Errors.AMOUNT_MUST_BE_GREATER_THAN_ZERO());
+        
+        invoiceCount += 1;
 
         Invoice memory newInvoice = Invoice({
+            invoiceId: invoiceCount,
             creator: msg.sender,
-            username: username,
+            username: users[msg.sender].username,
             description: description,
             amount: amount,
             isPaid: false,
+            isCancelled: false,
             payer: address(0),
-            transactionUrl: "" // Placeholder, will be updated after payment
+            transactionUrl: ""
         });
 
         userInvoices[msg.sender].push(newInvoice);
-        invoiceDetails[invoiceId] = newInvoice;
+        invoiceDetails[invoiceCount] = newInvoice;
 
-        emit InvoiceCreated(invoiceId, msg.sender, amount);
+        emit Event.InvoiceCreated(invoiceCount, msg.sender, amount);
     }
 
-    // Function to pay for an invoice
-    function payInvoice(string memory invoiceId) external payable {
+    function cancelInvoice(uint256 invoiceId) 
+        external 
+        payable 
+        invoiceOwner(invoiceId) 
+    {
         Invoice storage invoice = invoiceDetails[invoiceId];
 
-        require(invoice.amount > 0, "Invoice does not exist");
-        require(!invoice.isPaid, "Invoice already paid");
-        require(msg.value == invoice.amount, "Incorrect payment amount");
+        require(!invoice.isPaid, Errors.INVOICE_ALREADY_PAID());
+
+        invoice.isCancelled = true;
+
+        emit Event.InvoiceCancelled(invoice.invoiceId, msg.sender);
+    }
+
+    function payInvoice(uint256 invoiceId) 
+        external 
+        payable 
+        validInvoice(invoiceId) 
+    {
+        Invoice storage invoice = invoiceDetails[invoiceId];
+
+        require(!invoice.isCancelled, Errors.INVOICE_ALREADY_CANCELLED());
+        require(!invoice.isPaid, Errors.INVOICE_ALREADY_PAID());
+        require(msg.value == invoice.amount, Errors.INCORRECT_PAYMENT_AMOUNT());
 
         invoice.isPaid = true;
         invoice.payer = msg.sender;
 
         // Generate the Etherscan transaction URL
-        string memory transactionHash = toHexString(uint256(uint160(msg.sender)), 20);
-        invoice.transactionUrl = string(abi.encodePacked("https://etherscan.io/tx/", transactionHash));
+        invoice.transactionUrl = string(
+            abi.encodePacked("https://sepolia.etherscan.io/tx/", toHexString(uint256(uint160(msg.sender)), 20))
+        );
 
         // Transfer ETH to the creator
         payable(invoice.creator).transfer(msg.value);
 
-        emit PaymentReceived(invoiceId, msg.sender, msg.value, invoice.transactionUrl);
-    }
-
-    // Function to fetch invoices for a user
-    function getInvoicesForUser(address user) external view returns (Invoice[] memory) {
-        return userInvoices[user];
+        emit Event.PaymentReceived(invoiceId, msg.sender, msg.value, invoice.transactionUrl);
     }
 
     // Helper function to convert string to bytes32 (for frontend integration)
     function stringToBytes32(string memory source) public pure returns (bytes32 result) {
-        require(bytes(source).length <= 32, "String too long");
+        require(bytes(source).length <= 32, Errors.STRING_TOO_LONG());
         assembly {
             result := mload(add(source, 32))
         }
@@ -101,7 +162,23 @@ contract Kaluuba {
             buffer[i] = _SYMBOLS[value & 0xf];
             value >>= 4;
         }
-        require(value == 0, "Hex length insufficient");
+        require(value == 0, Errors.HEX_LENGTH_INSUFICIENT());
         return string(buffer);
+    }
+
+    // ================================================================================
+    // ========================= Getter Functions =====================================
+    // ================================================================================
+
+    function getInvoicesForUser(address user) external view returns (Invoice[] memory) {
+        return userInvoices[user];
+    }
+
+    function getUser(address userAddress) external view returns (User memory) {
+        return users[userAddress];
+    }
+
+    function getInvoice(uint256 invoiceAddress) external view returns (Invoice memory) {
+        return invoiceDetails[invoiceAddress];
     }
 }
