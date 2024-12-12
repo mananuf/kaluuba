@@ -1,9 +1,13 @@
 'use client'
+
+import { useState } from 'react'
 import BusinessCategories from "../components/businness-categories";
 import Header from "../components/header";
+import Modal from "@/components/modal/modal";
 
 
 export default function Home() {
+  const [modalOpen, setModalOpen] = useState(false)
 
   return (
     <div className="bg-white h-screen">
@@ -43,6 +47,7 @@ export default function Home() {
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <a
                 href="#"
+                onClick={() => setModalOpen(true)}
                 className="rounded-full bg-blue-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
               >
                 Get started
@@ -66,6 +71,34 @@ export default function Home() {
           />
         </div>
       </div>
+      
+      {/* username registration modal */}
+      {modalOpen && (
+        <Modal 
+          title="Create Username" 
+          actionButton={{label: 'register'}} 
+          cancelBtn={ false }
+          content={
+            <div>
+              <p className="mt-1 text-xs text-gray-600">
+                This will create a unique username that identifies your wallet address for ease of transaction.
+              </p>
+              <div className="mt-5">
+                <div className="flex items-center rounded-md bg-white pl-3 outline outline-1 -outline-offset-1 outline-gray-300 focus-within:outline focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-blue-600">
+                  <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    placeholder="Enter Username"
+                    className="block min-w-0 grow py-1.5 pl-1 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6"
+                  />
+                  <div className="shrink-0 select-none text-base text-gray-500 sm:text-sm/6 mr-1">.kaluuba.eth</div>
+                </div>
+              </div>
+            </div>
+          }
+        />
+        )}
     </div>
   )
 }
