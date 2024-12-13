@@ -1,5 +1,5 @@
 interface ConnectButtonProps {
-    label: string;
+    label?: string;
   }
 
 export default function ConnectButton({label = "Connect Wallet"}: ConnectButtonProps) {
