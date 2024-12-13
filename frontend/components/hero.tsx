@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useAccount, useReadContract } from 'wagmi';
+import { writeContract } from '@wagmi/core'
 import { kaluubaAbi } from '../abi/kaluubaAbi';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { config, networks } from '@/config/index';
 import BusinessCategories from "../components/businness-categories";
 import Modal from "@/components/modal/modal";
 import ConnectButton from '@/components/connect-button';
@@ -14,6 +15,8 @@ export default function Hero () {
     const { isConnected, address } = useAccount();
     const [username, setUsername] = useState(null);
     const [fetchUser, setFetchUser] = useState(false);
+    const [usernameInput, setUsernameInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
   
     const { data: userData, isError, isSuccess, failureReason } = useReadContract({
       abi: kaluubaAbi,
@@ -45,6 +48,63 @@ export default function Hero () {
     }, [isConnected, address]);
   
     console.log(userData, failureReason);
+
+    // ================= write to contract ===================
+    // const result = useWriteContract({
+    //     abi: kaluubaAbi,
+    //     address: KaluubaAddress,
+    //     functionName: 'registerUsername',
+    //     args: [usernameInput.toLowerCase() + '.kaluuba.eth'],
+    //     onSuccess: () => {
+    //       toast.success(`Username "${usernameInput}.kaluuba.eth" registered successfully!`);
+    //       setModalOpen(false);
+    //       setUsernameInput('');
+    //     },
+    //     onError: (error) => {
+    //       toast.error(`Failed to register username: ${error.message}`);
+    //     },
+    //   });
+
+    //================== handle submit =======================
+    const handleSubmit = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+    
+        if (!usernameInput.trim()) {
+          toast.error('Please enter a valid username.');
+          return;
+        }
+    
+        setIsLoading(true);
+        try {
+          console.log('Username input:', usernameInput + '.kaluuba.eth');
+
+            const writeData = await writeContract( config, {
+                abi: kaluubaAbi,
+                address: KaluubaAddress,
+                functionName: 'registerUsername',
+                args: [usernameInput.toLowerCase() + '.kaluuba.eth'],
+                // network: networks,
+                onSuccess: () => {
+                    toast.success(`Username "${usernameInput}.kaluuba.eth" registered successfully!`);
+                    setModalOpen(false);
+                    setUsernameInput('');
+                },
+                onError: (error) => {
+                    toast.error(`Failed to register username: ${error.message}`);
+                },
+            });
+
+            console.log(writeData);
+
+        //   toast.success(`Username ${usernameInput}.kaluuba.eth registered successfully!`);
+          setModalOpen(false);
+        } catch (error) {
+            console.log(error);
+          toast.error('Failed to register username.');
+        } finally {
+          setIsLoading(false);
+        }
+      };
 
     return (
         <div>
@@ -115,10 +175,13 @@ export default function Hero () {
       {modalOpen && (
         <Modal 
           title="Create Username" 
-          actionButton={{label: 'register'}} 
+          actionButton={{
+            label: isLoading ? 'Registering...' : 'Register',
+            onClick: handleSubmit,
+          }} 
           cancelBtn={ false }
           content={
-            <div>
+            <form onSubmit={handleSubmit}>
               <p className="mt-1 text-xs text-gray-600">
                 This will create a unique username that identifies your wallet address for ease of transaction.
               </p>
@@ -129,12 +192,15 @@ export default function Hero () {
                     name="username"
                     type="text"
                     placeholder="Enter Username"
+                    value={usernameInput}
+                    onChange={(e) => setUsernameInput(e.target.value)}
                     className="block min-w-0 grow py-1.5 pl-1 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6"
+                    required
                   />
                   <div className="shrink-0 select-none text-base text-gray-500 sm:text-sm/6 mr-1">.kaluuba.eth</div>
                 </div>
               </div>
-            </div>
+            </form>
           }
         />
         )}
