@@ -10,12 +10,30 @@ if (!projectId) {
   throw new Error('Project ID is not defined')
 }
 
-export const networks = [mainnet, arbitrum, base, sepolia, liskSepolia]
+//   const liskSepolia = {
+//     id: 4202,
+//     name: 'Lisk Sepolia Testnet',
+//     network: 'lisk-testnet',
+//     nativeCurrency: {
+//       name: 'Lisk',
+//       symbol: 'LSK',
+//       decimals: 18,
+//     },
+//     rpcUrls: {
+//       default: {
+//         http: ['https://rpc.sepolia-api.lisk.com/'],
+//       },
+//       public: {
+//         http: ['https://rpc.sepolia-api.lisk.com/'],
+//       },
+//     },
+//     blockExplorers: {
+//       default: { name: 'Lisk Explorer', url: 'https://sepolia-blockscout.lisk.com/' },
+//     },
+//     testnet: true,
+//   };
 
-export const liskSepoliaPublicClient = createPublicClient({
-    chain: liskSepolia,
-    transport: http()
-});
+export const networks = [mainnet, arbitrum, base, sepolia, liskSepolia]
 
 //Set up the Wagmi Adapter (Config)
 export const wagmiAdapter = new WagmiAdapter({
@@ -24,7 +42,7 @@ export const wagmiAdapter = new WagmiAdapter({
   }),
   ssr: true,
   projectId,
-  networks
+  networks,
 })
 
 export const config = wagmiAdapter.wagmiConfig
