@@ -8,8 +8,7 @@ import { useAccount, useReadContract} from 'wagmi';
 import { kaluubaAbi } from '@/abi/kaluubaAbi';
 import { toast, ToastContainer } from 'react-toastify';
 import { writeContract } from '@wagmi/core';
-import { config } from '@/config';
-import { parseUnits } from 'viem';
+import { config, kaluubaContractAddress } from '@/config';
 
 export default function ViewInvoice() {
   const searchParams = useSearchParams();
@@ -27,7 +26,7 @@ export default function ViewInvoice() {
     failureReason,
   } = useReadContract({
     abi: kaluubaAbi,
-    address: '0x019383d2360348bF77Bb98b2820A3E2A2fD5D4cF',
+    address: kaluubaContractAddress,
     functionName: 'getInvoice',
     args: [invoiceId],
   });
@@ -38,7 +37,7 @@ export default function ViewInvoice() {
     try {
         const payData = writeContract(config, {
             abi: kaluubaAbi,
-            address:  "0x019383d2360348bF77Bb98b2820A3E2A2fD5D4cF",
+            address:  kaluubaContractAddress,
             functionName: 'payInvoice',
             args: [invoiceId],
             value: selectedInvoice.amount
@@ -90,7 +89,7 @@ export default function ViewInvoice() {
 
   return (
     <DashboardLayout>
-      <div className="flex justify-center items-center min-h-screen bg-white p-4">
+      <div className="flex justify-center items-center min-h-screen bg-white p-4 my-6">
       {/* <ToastContainer/> */}
         <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
           {/* QR Code Section */}

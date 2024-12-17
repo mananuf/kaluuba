@@ -1,17 +1,17 @@
 import { useAccount, useReadContract } from 'wagmi';
 import { kaluubaAbi } from "@/abi/kaluubaAbi";
 import { useMemo } from "react";
+import { kaluubaContractAddress } from '@/config';
 
 export function useInvoices() {
     const { address } = useAccount();
 
-    const { data: userInvoices, isError, isSuccess, failureReason } = useReadContract({
+    const { data: userInvoices, isError, isSuccess, failureReason }: any = useReadContract({
         abi: kaluubaAbi,
-        address: "0x019383d2360348bF77Bb98b2820A3E2A2fD5D4cF",
+        address: kaluubaContractAddress,
         functionName: 'getInvoicesForUser',
         args: [address],
     });
-
 
     const invoiceSummary = useMemo(() => {
         if (!userInvoices) return {};

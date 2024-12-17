@@ -10,6 +10,7 @@ import { kaluubaAbi } from "@/abi/kaluubaAbi";
 import ConnectButton from '@/components/connect-button';
 import Link from "next/link";
 import { useInvoices } from "@/hooks/user-invoices";
+import { kaluubaContractAddress } from "@/config";
 
 interface DashboardLayoutProps {
     children: React.ReactNode
@@ -25,7 +26,7 @@ export default function DashboardLayout({children}: DashboardLayoutProps) {
 
     const { data: userData, isError, isSuccess, failureReason } = useReadContract({
         abi: kaluubaAbi,
-        address: "0x019383d2360348bF77Bb98b2820A3E2A2fD5D4cF",
+        address: kaluubaContractAddress,
         functionName: 'getUser',
         args: [address],
         enabled: fetchUser,
@@ -33,7 +34,7 @@ export default function DashboardLayout({children}: DashboardLayoutProps) {
 
     return(
         <MainLayout>
-            <div>
+            <div className="h-screen">
                 <nav className="fixed top-0 z-50 w-full bg-gray-100 border-b-2 border-gray-300 ">
                 <div className="px-3 py-3 lg:px-5 lg:pl-3">
                     <div className="flex items-center justify-between">

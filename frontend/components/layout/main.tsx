@@ -8,7 +8,7 @@ interface MainLayoutProps {
 
 export default function MainLayout({children}: MainLayoutProps) {
     return (
-        <div className="bg-white h-screen">
+        <div className="bg-white h-full">
             <ToastContainer/>
             {children}
         </div>

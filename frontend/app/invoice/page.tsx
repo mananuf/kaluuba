@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { useState } from 'react';
 import { kaluubaAbi } from "@/abi/kaluubaAbi";
 import { writeContract } from '@wagmi/core';
-import { config } from "@/config";
+import { config, kaluubaContractAddress } from "@/config";
 import Invoice from "@/components/Invoices";
 
 export default function Dashboard() {
@@ -26,34 +26,32 @@ export default function Dashboard() {
             return;
         }
 
-        // setIsLoading(true);  // Show loader when the transaction starts
+        setIsLoading(true);
 
         try {
-            // Initiate the contract call to create the invoice
             const createInvoice = writeContract(config, {
                 abi: kaluubaAbi,
-                address: "0x019383d2360348bF77Bb98b2820A3E2A2fD5D4cF",
+                address: kaluubaContractAddress,
                 functionName: 'createInvoice',
                 args: [descriptionInput, amountInput],
             });
 
-            if(isLoading) {
-                toast.info('Creating invoice...'); 
-            }
+            toast.info('Creating invoice...');
 
-            const invoiceResult = await createInvoice;
-
-            if (invoiceResult) {
+            await createInvoice;
+            
+            setTimeout(() => {
                 toast.success(`Invoice "${descriptionInput}" created successfully!`);
                 setDescriptionInput('');
                 setAmountInput('');
-            }
+                window.location.reload();
+            }, 8000);
 
         } catch (err) {
             console.error(err);
             toast.error('Unexpected error occurred.');
         } finally {
-            // setIsLoading(false);  // Hide loader when transaction is complete
+            setIsLoading(false); // Hide loader when transaction is complete
         }
     };
 
