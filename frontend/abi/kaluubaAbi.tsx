@@ -1,4 +1,5 @@
-export const kaluubaAbi = [
+export const kaluubaAbi = 
+[
     {
         "inputs": [],
         "stateMutability": "nonpayable",

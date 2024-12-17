@@ -46,19 +46,22 @@ export default function Hero() {
 
         setIsLoading(true);
         try {
-            const result = await writeContract(config, {
+            const result = writeContract(config, {
                 abi: kaluubaAbi,
                 address: kaluubaContractAddress,
                 functionName: 'registerUsername',
                 args: [`${usernameInput.toLowerCase()}.kaluuba.eth`],
             });
 
-            if (result) {
+            await result;
+            
+            setTimeout(() => {
                 toast.success(`Username "${usernameInput}.kaluuba.eth" registered successfully!`);
                 setModalOpen(false);
                 setUsernameInput('');
                 router.push('/dashboard');
-            }
+            }, 8000);
+
         } catch (error) {
             console.error(error);
             toast.error('Failed to register username.');

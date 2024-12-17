@@ -29,7 +29,7 @@ export default function DashboardLayout({children}: DashboardLayoutProps) {
         address: kaluubaContractAddress,
         functionName: 'getUser',
         args: [address],
-        enabled: fetchUser,
+        // enabled: fetchUser && isConnected && !!address,
     });
 
     return(
@@ -65,10 +65,14 @@ export default function DashboardLayout({children}: DashboardLayoutProps) {
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6 text-white">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                                         </svg>
-                                        {isConnected && userData?.username ? (
-                                            <span className="text-white font-medium">{userData.username}</span>
+                                        {isConnected ? (
+                                            isLoading ? (
+                                                'Loading...'
+                                            ) : (
+                                                <span className="text-white font-medium">{userData?.username}</span>
+                                            )
                                         ) : (
-                                            <ConnectButton/>
+                                            <ConnectButton />
                                         )}
                                     </div>
                                 )}
@@ -141,7 +145,7 @@ export default function DashboardLayout({children}: DashboardLayoutProps) {
                 </div>
                 </aside>
 
-                <div className="p-4 sm:ml-64">
+                <div className="p-4 sm:ml-64 h-full">
                     {children}
                 </div>
             </div>

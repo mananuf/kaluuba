@@ -46,8 +46,10 @@ export default function ViewInvoice() {
         const registerResult = await payData;
 
         if (isSuccess && registerResult) {
-            toast.success(`Payment successful!`);
-            router.push('/');
+            setTimeout(() => {
+                toast.success(`Payment successful!`);
+                router.push('/');
+            }, 8000)
         } else {
             // console.log(error);
         }
@@ -72,6 +74,7 @@ export default function ViewInvoice() {
         creatorAddress: getInvoice.creator,
         isPaid: getInvoice.isPaid,
         isCancelled: getInvoice.isCancelled,
+        payer: getInvoice.payer,
       };
       setSelectedInvoice(invoiceData);
     }
@@ -89,7 +92,7 @@ export default function ViewInvoice() {
 
   return (
     <DashboardLayout>
-      <div className="flex justify-center items-center min-h-screen bg-white p-4 my-6">
+      <div className="flex justify-center items-center bg-white p-4 my-6">
       {/* <ToastContainer/> */}
         <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
           {/* QR Code Section */}
@@ -152,6 +155,18 @@ export default function ViewInvoice() {
               Address: {selectedInvoice.creatorAddress}
             </p>
           </div>
+
+          {
+            selectedInvoice.isPaid 
+            ? 
+            <div className="text-left mb-6">
+                <h2 className="text-xl font-semibold text-gray-800">Payer Details</h2>
+                <p className="text-sm text-gray-600">
+                Address: {selectedInvoice.payer}
+                </p>
+            </div>
+              : ''
+            }
 
           {/* Payment Breakdown */}
           <div className="mb-6">
