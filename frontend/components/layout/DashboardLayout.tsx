@@ -9,6 +9,7 @@ import Logo from "@/public/img/kaluuba-logo.png";
 import { kaluubaAbi } from "@/abi/kaluubaAbi";
 import ConnectButton from '@/components/connect-button';
 import Link from "next/link";
+import { useInvoices } from "@/components/user-invoices";
 
 interface DashboardLayoutProps {
     children: React.ReactNode
@@ -20,6 +21,7 @@ export default function DashboardLayout({children}: DashboardLayoutProps) {
     const [isLoading, setIsLoading] = useState(false);
     const { isConnected, address } = useAccount();
     const router = useRouter();
+    const { invoiceSummary } = useInvoices();
 
     const { data: userData, isError, isSuccess, failureReason } = useReadContract({
         abi: kaluubaAbi,
@@ -28,11 +30,6 @@ export default function DashboardLayout({children}: DashboardLayoutProps) {
         args: [address],
         enabled: fetchUser,
     });
-
-    if(isConnected) {
-        console.log(userData)
-    }
-
 
     return(
         <MainLayout>
@@ -67,8 +64,11 @@ export default function DashboardLayout({children}: DashboardLayoutProps) {
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6 text-white">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                                         </svg>
-                                
-                                    <p className="text-white font-medium">{userData.username}</p>
+                                        {isConnected && userData?.username ? (
+                                            <span className="text-white font-medium">{userData.username}</span>
+                                        ) : (
+                                            <ConnectButton/>
+                                        )}
                                     </div>
                                 )}
                             </button>
@@ -104,7 +104,7 @@ export default function DashboardLayout({children}: DashboardLayoutProps) {
                 </nav>
                 <aside id="logo-sidebar" className="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full bg-gray-100 border-r border-gray-200 sm:translate-x-0" aria-label="Sidebar">
                 <div className="h-full px-3 pb-4 overflow-y-auto bg-gray-100 shadow-sm">
-                    <ul className="space-y-2 font-medium">
+                    {isConnected ? (<ul className="space-y-2 font-medium">
                         <Link href={'/dashboard'} >
                         <li>
                             <span className="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100 group cursor-pointer">
@@ -124,12 +124,19 @@ export default function DashboardLayout({children}: DashboardLayoutProps) {
                                     <path d="M6.143 0H1.857A1.857 1.857 0 0 0 0 1.857v4.286C0 7.169.831 8 1.857 8h4.286A1.857 1.857 0 0 0 8 6.143V1.857A1.857 1.857 0 0 0 6.143 0Zm10 0h-4.286A1.857 1.857 0 0 0 10 1.857v4.286C10 7.169 10.831 8 11.857 8h4.286A1.857 1.857 0 0 0 18 6.143V1.857A1.857 1.857 0 0 0 16.143 0Zm-10 10H1.857A1.857 1.857 0 0 0 0 11.857v4.286C0 17.169.831 18 1.857 18h4.286A1.857 1.857 0 0 0 8 16.143v-4.286A1.857 1.857 0 0 0 6.143 10Zm10 0h-4.286A1.857 1.857 0 0 0 10 11.857v4.286c0 1.026.831 1.857 1.857 1.857h4.286A1.857 1.857 0 0 0 18 16.143v-4.286A1.857 1.857 0 0 0 16.143 10Z"/>
                                 </svg>
                                 <span className="flex-1 ms-3 whitespace-nowrap">Invoices</span>
-                                <span className="inline-flex items-center justify-center px-2 ms-3 text-sm font-medium text-gray-800 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-300">1</span>
+                                {invoiceSummary && invoiceSummary.allInvoices ? (
+                                    <span className="inline-flex items-center justify-center px-2 ms-3 text-sm font-medium text-gray-50 bg-red-600 rounded-full w-6 h-6">
+                                        {invoiceSummary.allInvoices.count}
+                                    </span>
+                                ) : ''}
+
+                                
                             </span>
                         </li>
                         </Link>
                      
-                    </ul>
+                    </ul>)
+                    :''}
                 </div>
                 </aside>
 

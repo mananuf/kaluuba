@@ -3,10 +3,10 @@
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import React from "react";
 import Invoice from "@/components/Invoices";
-import { useInvoices } from "@/components/user-invoices"; // Import the custom hook
+import { useInvoices } from "@/components/user-invoices";
 
 const Dashboard = () => {
-  const { invoiceSummary } = useInvoices(); // Call the hook to get the invoice summary
+  const { invoiceSummary } = useInvoices();
 
   return (
     <DashboardLayout>
