@@ -116,6 +116,15 @@ contract Kaluuba {
 
         invoice.isCancelled = true;
 
+        // Update the corresponding invoice in userInvoices
+        Invoice[] storage creatorInvoices = userInvoices[invoice.creator];
+        for (uint256 i = 0; i < creatorInvoices.length; i++) {
+            if (creatorInvoices[i].invoiceId == invoiceId) {
+                creatorInvoices[i].isCancelled = true;
+                break;
+            }
+        }
+
         emit Event.InvoiceCancelled(invoice.invoiceId, msg.sender);
     }
 
@@ -133,6 +142,17 @@ contract Kaluuba {
         invoice.isPaid = true;
         invoice.payer = msg.sender;
 
+        // Update the corresponding invoice in userInvoices
+        Invoice[] storage creatorInvoices = userInvoices[invoice.creator];
+        for (uint256 i = 0; i < creatorInvoices.length; i++) {
+            if (creatorInvoices[i].invoiceId == invoiceId) {
+                creatorInvoices[i].isPaid = true;
+                creatorInvoices[i].payer = msg.sender;
+                break;
+            }
+        }
+
+        //todo: remove
         // Generate the Etherscan transaction URL
         invoice.transactionUrl = string(
             abi.encodePacked("https://sepolia.etherscan.io/tx/", toHexString(uint256(uint160(msg.sender)), 20))
