@@ -15,6 +15,7 @@ export function useInvoices() {
 
     const invoiceSummary = useMemo(() => {
         if (!userInvoices) return {};
+
         const summary = {
             allInvoices: {
                 count: userInvoices.length,

@@ -6,7 +6,7 @@ import Invoice from "@/components/Invoices";
 import { useInvoices } from "@/components/user-invoices";
 
 const Dashboard = () => {
-  const { invoiceSummary } = useInvoices();
+  const { invoiceSummary }: any = useInvoices();
 
   return (
     <DashboardLayout>

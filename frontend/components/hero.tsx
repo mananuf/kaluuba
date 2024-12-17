@@ -5,9 +5,11 @@ import { useAccount, useReadContract } from 'wagmi';
 import { writeContract } from '@wagmi/core';
 import { kaluubaAbi } from '../abi/kaluubaAbi';
 import { toast } from 'react-toastify';
+import { config } from "@/config";
 import BusinessCategories from "../components/businness-categories";
 import Modal from "@/components/modal/modal";
 import ConnectButton from '@/components/connect-button';
+import { error } from 'console';
 
 const KaluubaAddress = process.env.NEXT_PUBLIC_KALUUBA_CONTRACT_ADDRESS;
 
@@ -67,17 +69,24 @@ export default function Hero() {
 
         setIsLoading(true);
         try {
-            const writeData = await writeContract({
+            const writeData = writeContract(config, {
                 abi: kaluubaAbi,
-                address: KaluubaAddress,
+                address:  "0x019383d2360348bF77Bb98b2820A3E2A2fD5D4cF",
                 functionName: 'registerUsername',
                 args: [usernameInput.toLowerCase() + '.kaluuba.eth'],
             });
 
-            toast.success(`Username "${usernameInput}.kaluuba.eth" registered successfully!`);
-            setModalOpen(false);
-            setUsernameInput('');
-            router.push('/dashboard'); // Redirect after successful registration
+            const registerResult = await writeData;
+
+            if (registerResult) {
+                toast.success(`Username "${usernameInput}.kaluuba.eth" registered successfully!`);
+                setModalOpen(false);
+                setUsernameInput('');
+                router.push('/dashboard');
+            } else {
+                console.log(error);
+            }
+            
         } catch (error) {
             console.error(error);
             toast.error('Failed to register username.');
