@@ -1,32 +1,17 @@
 'use client'
 
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { useAccount, useReadContract } from 'wagmi';
 import { toast } from 'react-toastify';
 import { useState } from 'react';
 import { kaluubaAbi } from "@/abi/kaluubaAbi";
 import { writeContract } from '@wagmi/core';
 import { config } from "@/config";
+import Invoice from "@/components/Invoices";
 
 export default function Dashboard() {
     const [descriptionInput, setDescriptionInput] = useState('');
     const [amountInput, setAmountInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const { isConnected, address } = useAccount();
-    let invoices;
-
-    const { data: userInvoices, isError, isSuccess, failureReason } = useReadContract({
-        abi: kaluubaAbi,
-        address: "0x019383d2360348bF77Bb98b2820A3E2A2fD5D4cF",
-        functionName: 'getInvoicesForUser',
-        args: [address],
-        // enabled: fetchUser,
-    });
-
-    if(userInvoices) {
-        invoices = userInvoices;
-        console.log(invoices)
-    }
 
     const handleSubmit = async (e?: React.FormEvent) => {
         e?.preventDefault();
@@ -41,7 +26,7 @@ export default function Dashboard() {
             return;
         }
 
-        // setIsLoading(true);
+        setIsLoading(true);
         try {
             const createInvoice = writeContract(config, {
                 abi: kaluubaAbi,
@@ -62,7 +47,7 @@ export default function Dashboard() {
             console.error(err);
             toast.error('Unexpected error occurred.');
         } finally {
-            // setIsLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -111,47 +96,7 @@ export default function Dashboard() {
                     {isLoading ? 'Creating...' : 'Create New'}
                 </button>
             </form>
-            <ul role="list" className="divide-y divide-gray-300 p-5 shadow-lg my-10">
-                <li className="flex justify-between gap-x-6 py-5 bg-gray-50">
-                    <span className="text-gray-800 font-bold px-2">Item</span>
-                    <span className="text-gray-800 font-bold px-2">Amount</span>
-                </li>
-            {invoices?.map((invoice) => (
-                <li key={invoice.invoiceId} className="flex justify-between gap-x-6 py-5">
-                <div className="flex min-w-0 gap-x-4">
-                    {/* <img alt="" src={person.imageUrl} className="size-12 flex-none rounded-full bg-gray-50" /> */}
-                    <div className="min-w-0 flex-auto">
-                    <p className="text-sm/6 font-semibold text-gray-900">{invoice.description}</p>
-                    <p className="mt-1 truncate text-xs/5 text-gray-500">{invoice.creator}</p>
-                    </div>
-                </div>
-                <div className="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
-                    <p className="text-sm/6 text-gray-900 font-bold">{invoice.amount}</p>
-                    {invoice.lastSeen ? (
-                        <p className="mt-1 text-xs/5 text-gray-500">
-                            Last seen <time dateTime={invoice.lastSeenDateTime}>{invoice.lastSeen}</time>
-                        </p>
-                    ) : (
-                        invoice.isPaid ? (
-                            <div className="mt-1 flex items-center gap-x-1.5">
-                                <div className="flex-none rounded-full bg-emerald-500/20 p-1">
-                                    <div className="size-1.5 rounded-full bg-emerald-500" />
-                                </div>
-                                <p className="text-xs/5 text-green-500">Paid</p>
-                            </div>
-                        ) : (
-                            <div className="mt-1 flex items-center gap-x-1.5">
-                                <div className="flex-none rounded-full bg-red-500/20 p-1">
-                                    <div className="size-1.5 rounded-full bg-red-500" />
-                                </div>
-                                <p className="text-xs/5 text-red-500">Pending Payment</p>
-                            </div>
-                        )
-                    )}
-                </div>
-                </li>
-                ))}
-            </ul>
+            <Invoice/>
         </div>
         </DashboardLayout>
     );
