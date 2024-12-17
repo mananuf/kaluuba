@@ -1,158 +1,109 @@
-'use client'
 
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { useAccount, useReadContract } from 'wagmi';
-import { toast } from 'react-toastify';
-import { useState } from 'react';
-import { kaluubaAbi } from "@/abi/kaluubaAbi";
-import { writeContract } from '@wagmi/core';
-import { config } from "@/config";
+import React from "react";
 
-export default function Dashboard() {
-    const [descriptionInput, setDescriptionInput] = useState('');
-    const [amountInput, setAmountInput] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const { isConnected, address } = useAccount();
-    let invoices;
+const paymentsData = [
+  {
+    title: "All Payments",
+    payments: [
+      { id: 1, name: "Amount", amount: "150" },
+    ],
+  },
+  {
+    title: "All Invoices",
+    payments: [
+      { id: 1, amount: "100" },
+      
+    ],
+  },
+  {
+    title: "Pending",
+    payments: [
+      { id: 1,  amount: "250" },
+    
+    ],
+  },
+  {
+    title: "Cancelled",
+    payments: [
+      { id: 1,  amount: "400" },
+    
+    ],
+  },
+];
+const invoiceData = [
+    { id: "INV001", status: "Paid", method: "Credit Card", amount: "$250.00" },
+    { id: "INV002", status: "Pending", method: "Bank Transfer", amount: "$150.00" },
+    { id: "INV003", status: "Cancelled", method: "PayPal", amount: "$0.00" },
+  ];
 
-    const { data: userInvoices, isError, isSuccess, failureReason } = useReadContract({
-        abi: kaluubaAbi,
-        address: "0x019383d2360348bF77Bb98b2820A3E2A2fD5D4cF",
-        functionName: 'getInvoicesForUser',
-        args: [address],
-        // enabled: fetchUser,
-    });
-
-    if(userInvoices) {
-        invoices = userInvoices;
-        console.log(invoices)
-    }
-
-    const handleSubmit = async (e?: React.FormEvent) => {
-        e?.preventDefault();
-
-        if (!descriptionInput.trim()) {
-            toast.error('Please enter a valid description.');
-            return;
-        }
-
-        if (!amountInput.trim()) {
-            toast.error('Please enter an amount.');
-            return;
-        }
-
-        // setIsLoading(true);
-        try {
-            const createInvoice = writeContract(config, {
-                abi: kaluubaAbi,
-                address: "0x019383d2360348bF77Bb98b2820A3E2A2fD5D4cF",
-                functionName: 'createInvoice',
-                args: [descriptionInput, amountInput],
-                // enabled: Boolean(descriptionInput && amountInput), // Ensures args are provided before the function is enabled
-            });
-
-            // await createInvoice;
-            console.log(await createInvoice)
-
-            toast.success(`Invoice "${descriptionInput}" created successfully!`);
-            setDescriptionInput('');
-            setAmountInput('');
-
-        } catch (err) {
-            console.error(err);
-            toast.error('Unexpected error occurred.');
-        } finally {
-            // setIsLoading(false);
-        }
-    };
-
-    return (
-        <DashboardLayout>
-            <div>
-            <form onSubmit={handleSubmit} className="mt-20 max-w-xl shadow-lg p-5 border-[0.5px] border-gray-200 rounded-sm">
-                <p className="mt-1 text-xl capitalize font-semibold text-gray-900">
-                    Create New Invoice
-                </p>
-                <div className="mt-5">
-                    <div className="flex items-center rounded-md bg-white pl-3 outline outline-1 -outline-offset-1 outline-gray-300 focus-within:outline focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-blue-600">
-                        <input
-                            id="description"
-                            name="description"
-                            type="text"
-                            placeholder="Enter Description"
-                            value={descriptionInput}
-                            onChange={(e) => setDescriptionInput(e.target.value)}
-                            className="block min-w-0 grow py-1.5 pl-1 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6"
-                            required
-                        />
-                    </div>
-                </div>
-                <div className="mt-5">
-                    <div className="flex items-center rounded-md bg-white pl-3 outline outline-1 -outline-offset-1 outline-gray-300 focus-within:outline focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-blue-600">
-                        <input
-                            id="amount"
-                            name="amount"
-                            type="number"
-                            placeholder="Enter Amount"
-                            value={amountInput}
-                            onChange={(e) => setAmountInput(e.target.value)}
-                            className="block min-w-0 grow py-1.5 pl-1 pr-3 text-base text-gray-900 placeholder:text-gray-400 focus:outline focus:outline-0 sm:text-sm/6"
-                            required
-                        />
-                    </div>
-                </div>
-                <button
-                    type="submit"
-                    className={`mt-5 bg-gradient-to-tr from-blue-600 to-blue-400 text-white px-4 py-2 rounded-md ${
-                        isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                    disabled={isLoading}
+const Dashboard = () => {
+  return (
+    <DashboardLayout>
+        <section>
+            <div className="h-full p-8 mt-12 overflow-hidden">
+            <h1 className="text-3xl font-semibold mb-6 text-gray-800">Payment Dashboard</h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {paymentsData.map((card, index) => (
+                <div
+                    key={index}
+                    className="relative overflow-clip bg-gradient-to-b from-blue-700 to-blue-500 h-40 flex flex-col justify-between rounded-lg shadow-lg p-4 hover:shadow-xl transition-shadow duration-300"
                 >
-                    {isLoading ? 'Creating...' : 'Create New'}
-                </button>
-            </form>
-            <ul role="list" className="divide-y divide-gray-300 p-5 shadow-lg my-10">
-                <li className="flex justify-between gap-x-6 py-5 bg-gray-50">
-                    <span className="text-gray-800 font-bold px-2">Item</span>
-                    <span className="text-gray-800 font-bold px-2">Amount</span>
-                </li>
-            {invoices?.map((invoice) => (
-                <li key={invoice} className="flex justify-between gap-x-6 py-5">
-                <div className="flex min-w-0 gap-x-4">
-                    {/* <img alt="" src={person.imageUrl} className="size-12 flex-none rounded-full bg-gray-50" /> */}
-                    <div className="min-w-0 flex-auto">
-                    <p className="text-sm/6 font-semibold text-gray-900">{invoice.description}</p>
-                    <p className="mt-1 truncate text-xs/5 text-gray-500">{invoice.creator}</p>
+                    <h2 className="text-lg font-semibold mb-3">{card.title}</h2>
+                    <div className="overflow-y-auto max-h-48">
+                    <ul className="space-y-2">
+                        {card.payments.map((payment) => (
+                        <li
+                            key={payment.id}
+                            className="flex justify-between border-t pb-2"
+                        >
+                            <span className="text-white font-bold text-2xl">
+                            {payment.amount}
+                            </span>
+                        </li>
+                        ))}
+                    </ul>
                     </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="absolute -right-10 w-52 h-52 opacity-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+
                 </div>
-                <div className="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
-                    <p className="text-sm/6 text-gray-900 font-bold">{invoice.amount}</p>
-                    {invoice.lastSeen ? (
-                        <p className="mt-1 text-xs/5 text-gray-500">
-                            Last seen <time dateTime={invoice.lastSeenDateTime}>{invoice.lastSeen}</time>
-                        </p>
-                    ) : (
-                        invoice.isPaid ? (
-                            <div className="mt-1 flex items-center gap-x-1.5">
-                                <div className="flex-none rounded-full bg-emerald-500/20 p-1">
-                                    <div className="size-1.5 rounded-full bg-emerald-500" />
-                                </div>
-                                <p className="text-xs/5 text-green-500">Paid</p>
-                            </div>
-                        ) : (
-                            <div className="mt-1 flex items-center gap-x-1.5">
-                                <div className="flex-none rounded-full bg-red-500/20 p-1">
-                                    <div className="size-1.5 rounded-full bg-red-500" />
-                                </div>
-                                <p className="text-xs/5 text-red-500">Pending Payment</p>
-                            </div>
-                        )
-                    )}
-                </div>
-                </li>
                 ))}
-            </ul>
-        </div>
-        </DashboardLayout>
-    );
-}
+            </div>
+            <div className="mt-12 bg-white p-6 rounded-lg shadow-lg">
+                <h2 className="text-xl font-semibold mb-4 text-gray-700">Recent Invoices</h2>
+                <table className="min-w-full border-collapse">
+                    <caption className="text-gray-700 text-sm mb-4">
+                    A list of your recent invoices.
+                    </caption>
+                    <thead>
+                    <tr className="bg-gradient-to-r from-blue-600 to-blue-500">
+                        <th className="w-[100px] text-left py-2 px-4 font-medium">
+                        Invoice
+                        </th>
+                        <th className="text-left py-2 px-4 font-medium">Status</th>
+                        <th className="text-left py-2 px-4 font-medium">Item</th>
+                        <th className="text-right py-2 px-4 font-medium">Amount</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {invoiceData.map((invoice) => (
+                        <tr key={invoice.id} className="border-b text-gray-700">
+                        <td className="py-2 px-4 font-medium">{invoice.id}</td>
+                        <td className="py-2 px-4">{invoice.status}</td>
+                        <td className="py-2 px-4">{invoice.method}</td>
+                        <td className="py-2 px-4 text-right">{invoice.amount}</td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </section>
+    </DashboardLayout>
+   
+  );
+};
+
+export default Dashboard;
