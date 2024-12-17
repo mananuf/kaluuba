@@ -9,9 +9,7 @@ import Logo from "@/public/img/kaluuba-logo.png";
 import { kaluubaAbi } from "@/abi/kaluubaAbi";
 import ConnectButton from '@/components/connect-button';
 import Link from "next/link";
-import { useInvoices } from "@/components/user-invoices";
-import { ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import { useInvoices } from "@/hooks/user-invoices";
 
 interface DashboardLayoutProps {
     children: React.ReactNode
@@ -35,7 +33,6 @@ export default function DashboardLayout({children}: DashboardLayoutProps) {
 
     return(
         <MainLayout>
-            <ToastContainer/>
             <div>
                 <nav className="fixed top-0 z-50 w-full bg-gray-100 border-b-2 border-gray-300 ">
                 <div className="px-3 py-3 lg:px-5 lg:pl-3">

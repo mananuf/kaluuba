@@ -1,17 +1,21 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { QRCodeCanvas } from 'qrcode.react';
-import { useAccount, useReadContract } from 'wagmi';
+import { useAccount, useReadContract} from 'wagmi';
 import { kaluubaAbi } from '@/abi/kaluubaAbi';
 import { toast, ToastContainer } from 'react-toastify';
+import { writeContract } from '@wagmi/core';
+import { config } from '@/config';
+import { parseUnits } from 'viem';
 
 export default function ViewInvoice() {
   const searchParams = useSearchParams();
   const invoiceId = searchParams.get('invoiceId');
   const { address, isConnected } = useAccount();
+  const router = useRouter();
 
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
 
@@ -27,6 +31,35 @@ export default function ViewInvoice() {
     functionName: 'getInvoice',
     args: [invoiceId],
   });
+
+  const handleSubmitPayment = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+
+    try {
+        const payData = writeContract(config, {
+            abi: kaluubaAbi,
+            address:  "0x019383d2360348bF77Bb98b2820A3E2A2fD5D4cF",
+            functionName: 'payInvoice',
+            args: [invoiceId],
+            value: selectedInvoice.amount
+        });
+
+        const registerResult = await payData;
+
+        if (isSuccess && registerResult) {
+            toast.success(`Payment successful!`);
+            router.push('/');
+        } else {
+            // console.log(error);
+        }
+        
+    } catch (error) {
+        console.error(error);
+        toast.error('Failed to make payment.');
+    } finally {
+        // setIsLoading(false);
+    }
+};
 
   // Update the selectedInvoice state when data is fetched
   useEffect(() => {
@@ -163,7 +196,7 @@ export default function ViewInvoice() {
                 // Pay Invoice Button
                 <button
                 onClick={() => {
-                    console.log('Redirect to payment functionality here');
+                    handleSubmitPayment();
                 }}
                 className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold rounded-md focus:outline-none"
                 >

@@ -3,7 +3,7 @@
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import React from "react";
 import Invoice from "@/components/Invoices";
-import { useInvoices } from "@/components/user-invoices";
+import { useInvoices } from "@/hooks/user-invoices";
 
 const Dashboard = () => {
   const { invoiceSummary }: any = useInvoices();

@@ -1,6 +1,6 @@
 'use client'
 
-import { useInvoices } from './user-invoices';
+import { useInvoices } from "@/hooks/user-invoices";
 import { useRouter } from 'next/navigation';
   
 export default function Invoice () {

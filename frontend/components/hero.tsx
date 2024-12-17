@@ -9,7 +9,7 @@ import { config } from "@/config";
 import BusinessCategories from "../components/businness-categories";
 import Modal from "@/components/modal/modal";
 import ConnectButton from '@/components/connect-button';
-import { error } from 'console';
+// import { error } from 'console';
 
 const KaluubaAddress = process.env.NEXT_PUBLIC_KALUUBA_CONTRACT_ADDRESS;
 
